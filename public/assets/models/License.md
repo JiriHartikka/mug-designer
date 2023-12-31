@@ -1,0 +1,1 @@
+Asset zipinkent-cambirdge-mug.glb has been extracted from a Blender scene made by user zipinkent and published in https://free3d.com/ (see https://free3d.com/3d-model/cambridge-pattern-mug-654207.html) with a Personal Use License. All users of this project must follow the policy enforced by that license.
