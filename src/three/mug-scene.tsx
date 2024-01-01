@@ -6,11 +6,14 @@ import { Canvas, useLoader } from '@react-three/fiber'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader'
 
 export type MugSceneProps = {
-  textureImage?: HTMLImageElement
+  textureImage?: HTMLImageElement,
+  insideColor?: string,
 };
 
 export default function MugScene(props: MugSceneProps) {
   const gltf = useLoader(GLTFLoader, '/assets/models/zipinkent-cambridge-mug.glb');
+
+  const { insideColor, textureImage } = props;
 
   return (
     <Canvas camera={{ position: [-2.5, 13, 15] }} shadows>
@@ -19,8 +22,27 @@ export default function MugScene(props: MugSceneProps) {
         castShadow
         intensity={Math.PI * 2}
       />
+      <pointLight
+        position={[-3.0, 30, 1.5]}
+        castShadow
+        intensity={Math.PI * 300}
+      />
+      <pointLight
+        position={[-15.0, 1.0, 1.5]}
+        castShadow
+        intensity={Math.PI * 200}
+      />
+      <pointLight
+        position={[2.0, 1.0, -15]}
+        castShadow
+        intensity={Math.PI * 200}
+      />
       <ambientLight intensity={0.75} ></ambientLight>
-      <Mug model={gltf} textureImage={props.textureImage} />
+      <Mug 
+        model={gltf}
+        textureImage={textureImage} 
+        insideColor={insideColor} 
+      />
       <OrbitControls target={[0, 1, 0]} />
     </Canvas>
   )  
@@ -28,19 +50,21 @@ export default function MugScene(props: MugSceneProps) {
 
 type MugProps = {
   textureImage?: HTMLImageElement,
+  insideColor?: string,
   /** 3D model to use for the mug */
   model: { scene: any },
 }
 
 function Mug(props: MugProps) {
+  const { 
+    model: { scene }, 
+    textureImage,
+    insideColor, 
+  } = props;
 
-  const { model: { scene }, textureImage } = props;
-
-  const texture = useMugTexture(textureImage);
+  const texture = useMugTexture({ textureImage, insideColor });
 
   if (texture && scene) {
-    console.log(scene);
-
     texture.flipY = true;
     scene.children[0].material.map = texture;
   }

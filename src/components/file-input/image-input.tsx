@@ -1,10 +1,10 @@
 
 export type ImageInputProps = {
   onImageUploaded?: (image: HTMLImageElement) => void,
-};
+} & React.InputHTMLAttributes<HTMLInputElement>;
 
 export default function ImageInput(props: ImageInputProps) {
-  const { onImageUploaded } = props;
+  const { onImageUploaded, ...inputProps } = props;
 
   const onFileChange = async (files: FileList) => {
     console.log(files);
@@ -29,7 +29,8 @@ export default function ImageInput(props: ImageInputProps) {
     <input 
       type="file"
       onChange={(e) => e.target.files && onFileChange(e.target.files)} 
-      accept="image/*" 
+      accept="image/*"
+      {...inputProps} 
     />
   )
 }

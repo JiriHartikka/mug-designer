@@ -1,5 +1,6 @@
 'use client';
 
+import ColorSelect, { ColorOption } from '@/components/color-select/color-select';
 import styles from './page.module.css'
 import ImageInput from '@/components/file-input/image-input';
 import dynamic from 'next/dynamic';
@@ -12,17 +13,34 @@ const MugScene = dynamic(() => import('@/three/mug-scene'), {
 export default function Home() {
 
   const [image, setImage] = useState<HTMLImageElement>();
+  const [insideColor, setInsideColor] = useState<ColorOption>();
+
+  const extractOptionValue = (option: ColorOption | undefined) => {
+    const value = option?.value;
+    return value !== '' ? value : undefined;
+  };
 
   return (
     <Suspense>
       <main className={styles.main}>
+        <h1>Mug designer</h1>
         <div className={styles.canvasContainer}>
-          <MugScene textureImage={image} />
+          <MugScene 
+            textureImage={image}
+            insideColor={extractOptionValue(insideColor)}
+          />
         </div>
 
-        <div>
-          <ImageInput onImageUploaded={setImage} />
+        <div className={styles.inputGroup}>
+          <label htmlFor="texture-input">Choose an image to texture the mug with</label>
+          <ImageInput id="texture-input" onImageUploaded={setImage} />
         </div>
+
+        <div className={styles.inputGroup}>
+          <label htmlFor='select-inside-color'>Select color for the inside of the mug</label>
+          <ColorSelect id="select-inside-color" onSelected={setInsideColor}></ColorSelect>
+        </div>  
+
       </main>
     </Suspense>
   )

@@ -12,3 +12,13 @@
   width: 80vw;
   height: 60vh;
 }
+
+.inputGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5em;
+}
+
+.inputGroup label {
+  font-weight: bold;
+}
