@@ -12,7 +12,8 @@ export type MugSceneProps = {
 };
 
 export default function MugScene(props: MugSceneProps) {
-  const gltf = useLoader(GLTFLoader, '/assets/models/zipinkent-cambridge-mug.glb');
+  const path = window.location.pathname;
+  const gltf = useLoader(GLTFLoader, `${path}assets/models/zipinkent-cambridge-mug.glb`);
 
   const { 
     insideColor, 
