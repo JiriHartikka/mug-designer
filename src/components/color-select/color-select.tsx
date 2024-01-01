@@ -28,12 +28,9 @@ export type ColorSelectProps = {
 } & React.SelectHTMLAttributes<HTMLSelectElement>;
 
 export default function ColorSelect(props: ColorSelectProps) {
-  const { onSelected } = props;
+  const { onSelected, ...selectProps } = props;
 
   const handleChange = (event: {target: HTMLSelectElement}) => {
-    //console.log(e);
-
-    //target.value
 
     const selectedOption = colorOptions
       .find(option => option.value === event.target.value);
@@ -42,7 +39,7 @@ export default function ColorSelect(props: ColorSelectProps) {
   };
 
   return (
-    <select onChange={handleChange}>
+    <select onChange={handleChange} {...selectProps}>
       {colorOptions.map(option => (
         <option key={option.value} value={option.value}>
           {option.display}

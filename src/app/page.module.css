@@ -22,3 +22,9 @@
 .inputGroup label {
   font-weight: bold;
 }
+
+.controls {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5em;
+}

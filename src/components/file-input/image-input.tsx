@@ -6,17 +6,13 @@ export type ImageInputProps = {
 export default function ImageInput(props: ImageInputProps) {
   const { onImageUploaded, ...inputProps } = props;
 
-  const onFileChange = async (files: FileList) => {
-    console.log(files);
-    
+  const onFileChange = async (files: FileList) => {   
     const file = files.item(0);
 
     if (file && onImageUploaded) {
       const buffer = await file.arrayBuffer();
 
       const image = new Image();
-      //image.src = 
-
       const imageBlob = new Blob([buffer], {type: file.type});
       const url = URL.createObjectURL(imageBlob);
       image.src = url;

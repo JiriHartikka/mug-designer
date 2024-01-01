@@ -28,19 +28,36 @@ const INSIDE_BOTTOM: UVRegion = {
   width: 0.23,
 };
 
+const HANDLE1: UVRegion = {
+  origin: [0.78, 0.6],
+  height: 0.4,
+  width: 0.32,
+};
+
+const HANDLE2: UVRegion = {
+  origin: [0.55, 0.4],
+  height: 0.2,
+  width: 0.5,
+}
+
 export type UseMugTextureOptions = {
   textureImage?: HTMLImageElement,
   insideColor?: string,
+  handleColor?: string,
 };
 
-export function useMugTexture({textureImage, insideColor}: UseMugTextureOptions) {
+export default function useMugTexture({
+  textureImage,
+  insideColor,
+  handleColor,
+}: UseMugTextureOptions) {
   const [texture, setTexture] = useState<Texture>();
   
   useEffect(() => {
-    const canvas = createMugTexture(textureImage, insideColor);
+    const canvas = createMugTexture(textureImage, insideColor, handleColor);
     const dataTexture = new CanvasTexture(canvas);
     setTexture(dataTexture);
-  }, [textureImage, insideColor]);
+  }, [textureImage, insideColor, handleColor]);
 
   return texture;
 }
@@ -48,7 +65,8 @@ export function useMugTexture({textureImage, insideColor}: UseMugTextureOptions)
 
 export function createMugTexture(
   image?: HTMLImageElement,
-  insideColor?: string
+  insideColor?: string,
+  handleColor?: string,
 ): HTMLCanvasElement {
   
   const textureH = image?.height ?? 1000;
@@ -62,44 +80,73 @@ export function createMugTexture(
 
   if (ctx) {
     // Transparent layer.
-    ctx.save();
-    ctx.fillStyle = "rgba(255, 255, 255, 1.0)";
-    //ctx.beginPath();
-    ctx.fillRect(0, 0, backgroundWidth, backgroundHeight);
-    //ctx.fill();
-    ctx.restore();
+    fillBackgroundTransparent(ctx, backgroundHeight, backgroundWidth);
 
     // Draw image on top of the transparent layer. 
     // Flip image because of how model's UV coordinates are set up.
     if (image) {
-      ctx.save();
-      ctx.translate(0.2 * backgroundHeight, textureH);
-      ctx.scale(1, -1);
-
-      ctx.drawImage(image, 0, 0);
-      ctx.restore();
+      drawTextureImage(ctx, image, backgroundHeight, backgroundWidth);
     }
 
     // Color the inside of the mug.
     if (insideColor) {
-      fillUVRegion(
-        ctx,
-        backgroundHeight,
-        backgroundWidth,
-        INSIDE_WALLS,
-        insideColor
+      const regions = [INSIDE_WALLS, INSIDE_BOTTOM];
+
+      regions.forEach((region) => 
+        fillUVRegion(
+          ctx,
+          backgroundHeight,
+          backgroundWidth,
+          region,
+          insideColor
+        )
       );
-      fillUVRegion(
-        ctx,
-        backgroundHeight,
-        backgroundWidth,
-        INSIDE_BOTTOM,
-        insideColor
+    }
+
+    // Color the handle of the mug
+    if (handleColor) {
+      const regions = [HANDLE1, HANDLE2];
+
+      regions.forEach((region) => 
+        fillUVRegion(
+          ctx,
+          backgroundHeight,
+          backgroundWidth,
+          region,
+          handleColor
+        )
       );
     }
   }
 
   return canvas;
+}
+
+function fillBackgroundTransparent(
+  ctx: CanvasRenderingContext2D,
+  backgroundHeight: number,
+  backgroundWidth: number,
+): void {
+  ctx.save();
+  ctx.fillStyle = "rgba(255, 255, 255, 1.0)";
+  ctx.fillRect(0, 0, backgroundWidth, backgroundHeight);
+  ctx.restore();
+}
+
+function drawTextureImage(
+  ctx: CanvasRenderingContext2D,
+  image: HTMLImageElement,
+  backgroundHeight: number,
+  backgroundWidth: number,
+): void {
+  const height = image.height;
+
+  ctx.save();
+  ctx.translate(0.2 * backgroundHeight, height);
+  ctx.scale(1, -1);
+
+  ctx.drawImage(image, 0, 0);
+  ctx.restore();
 }
 
 function fillUVRegion(
