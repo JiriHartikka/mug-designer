@@ -1,3 +1,4 @@
+import { TextureControls } from "@/components/texture-controls/texture-controls";
 import { useEffect, useState } from "react";
 import { CanvasTexture, Texture } from "three";
 
@@ -15,6 +16,33 @@ type UVRegion = {
   height: number,
   width: number,
 };
+
+function rotate(region: UVRegion): UVRegion {
+  return {
+    origin: [1 - region.origin[0], 1 - region.origin[1]],
+    height: region.width,
+    width: region.height,
+  }
+}
+
+/*const WALL: UVRegion = {
+  origin: [0.15, 0],
+  height: 0.3,
+  width: 0.7,
+};*/
+
+const WALL: UVRegion = {
+  origin: [0.725, 0.315],
+  height: 0.685, 
+  width: 0.256,
+}; 
+
+const TEST: 
+UVRegion = {
+  origin: [0, 0],
+  height: 1, 
+  width: 0.5,
+}; 
 
 const INSIDE_WALLS: UVRegion = {
   origin: [0, 0.33],
@@ -42,29 +70,55 @@ const HANDLE2: UVRegion = {
 
 export type UseMugTextureOptions = {
   textureImage?: HTMLImageElement,
+  textureControls?: TextureControls,
   insideColor?: string,
   handleColor?: string,
 };
 
 export default function useMugTexture({
   textureImage,
+  textureControls,
   insideColor,
   handleColor,
 }: UseMugTextureOptions) {
   const [texture, setTexture] = useState<Texture>();
+  const [canvas, setCanvas] = useState<HTMLCanvasElement>();
   
   useEffect(() => {
-    const canvas = createMugTexture(textureImage, insideColor, handleColor);
+    const canvas = createMugTexture(textureImage, textureControls, insideColor, handleColor);
     const dataTexture = new CanvasTexture(canvas);
     setTexture(dataTexture);
+    setCanvas(canvas);
   }, [textureImage, insideColor, handleColor]);
+
+  useEffect(() => {
+    const textureH = textureImage?.height ?? 1000;
+    const backgroundHeight = textureH * 3;
+    const backgroundWidth = textureH * 3;
+    const ctx = canvas?.getContext('2d');
+
+    if (ctx && textureImage && textureControls?.selectedPosition) {
+      console.log("drawing");
+      drawTexture(
+        ctx,
+        textureImage,
+        backgroundHeight,
+        backgroundWidth,
+        textureControls?.selectedPosition
+      );
+      if (texture) {
+        console.log("needs update...");
+        texture.needsUpdate = true;
+      }
+    }
+  }, [canvas, textureImage, textureControls]);
 
   return texture;
 }
 
-
 export function createMugTexture(
   image?: HTMLImageElement,
+  textureControls?: TextureControls,
   insideColor?: string,
   handleColor?: string,
 ): HTMLCanvasElement {
@@ -85,11 +139,27 @@ export function createMugTexture(
     // Draw image on top of the transparent layer. 
     // Flip image because of how model's UV coordinates are set up.
     if (image) {
-      drawTextureImage(ctx, image, backgroundHeight, backgroundWidth);
+      drawTextureImage(ctx, image, backgroundHeight, backgroundWidth, textureControls?.selectedPosition ?? [0, 0]);
     }
 
+    /*fillUVRegion(
+      ctx,
+      backgroundHeight,
+      backgroundWidth,
+      WALL,
+      "green",
+    )*/
+
+    /*fillUVRegion(
+      ctx,
+      backgroundHeight,
+      backgroundWidth,
+      TEST,
+      "magenta",
+    )*/
+
     // Color the inside of the mug.
-    if (insideColor) {
+    /*if (insideColor) {
       const regions = [INSIDE_WALLS, INSIDE_BOTTOM];
 
       regions.forEach((region) => 
@@ -101,10 +171,10 @@ export function createMugTexture(
           insideColor
         )
       );
-    }
+    }*/
 
     // Color the handle of the mug
-    if (handleColor) {
+    /*if (handleColor) {
       const regions = [HANDLE1, HANDLE2];
 
       regions.forEach((region) => 
@@ -116,10 +186,22 @@ export function createMugTexture(
           handleColor
         )
       );
-    }
+    }*/
   }
 
   return canvas;
+}
+
+function drawTexture(
+  ctx: CanvasRenderingContext2D,
+  image: HTMLImageElement,
+  backgroundHeight: number,
+  backgroundWidth: number,
+  selectedPosition: [x: number, y: number],
+): void {
+
+  fillBackgroundTransparent(ctx, backgroundHeight, backgroundWidth);
+  drawTextureImage(ctx, image, backgroundHeight, backgroundWidth, selectedPosition);
 }
 
 function fillBackgroundTransparent(
@@ -138,14 +220,26 @@ function drawTextureImage(
   image: HTMLImageElement,
   backgroundHeight: number,
   backgroundWidth: number,
+  selectedPosition: [x: number, y: number],
 ): void {
-  const height = image.height;
+
+  console.log("texture position: ", selectedPosition)
 
   ctx.save();
-  ctx.translate(0.2 * backgroundHeight, height);
-  ctx.scale(1, -1);
 
-  ctx.drawImage(image, 0, 0);
+  const region = WALL;
+
+  ctx.translate(
+    region.origin[0] * backgroundWidth,
+    
+    region.origin[1] * backgroundHeight + region.height * (1 - selectedPosition[0]) * backgroundHeight,
+  );
+
+  ctx.rotate(-Math.PI/2);
+  
+  // Magic number for scaling the texture after flipping.
+  const scale =  0.77;
+  ctx.drawImage(image, 0, 0, scale * image.width, scale * image.height);
   ctx.restore();
 }
 

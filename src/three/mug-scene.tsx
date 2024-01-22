@@ -1,28 +1,35 @@
 'use client';
 
 import useMugTexture from '@/utils/image-processing/use-mug-texture';
-import { OrbitControls } from '@react-three/drei'
-import { Canvas, useLoader } from '@react-three/fiber'
-import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader'
+import { OrbitControls } from '@react-three/drei';
+import { Canvas, useLoader } from '@react-three/fiber';
+import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader'
+import { TextureControls } from '@/components/texture-controls/texture-controls';
+import { Mesh, MeshPhongMaterial, Object3D } from 'three';
 
 export type MugSceneProps = {
   textureImage?: HTMLImageElement,
+  textureControls?: TextureControls,
   insideColor?: string,
   handleColor?: string,
 };
 
 export default function MugScene(props: MugSceneProps) {
   const path = window.location.pathname;
-  const gltf = useLoader(GLTFLoader, `${path}assets/models/zipinkent-cambridge-mug.glb`);
+  const model = useLoader(
+    OBJLoader,
+    `${path}assets/models/mug.obj`, 
+  );
 
   const { 
     insideColor, 
     handleColor,
     textureImage, 
+    textureControls,
   } = props;
 
   return (
-    <Canvas camera={{ position: [-2.5, 13, 15] }} shadows>
+    <Canvas camera={{ position: [100, 200, 150] }} shadows>
       <directionalLight
         position={[3.3, 1.0, 4.4]}
         castShadow
@@ -45,46 +52,47 @@ export default function MugScene(props: MugSceneProps) {
       />
       <ambientLight intensity={0.75} ></ambientLight>
       <Mug 
-        model={gltf}
-        textureImage={textureImage} 
+        model={model}
+        textureImage={textureImage}
+        textureControls={textureControls} 
         insideColor={insideColor}
         handleColor={handleColor} 
       />
-      <OrbitControls target={[0, 1, 0]} />
+      <OrbitControls target={[0, 0, 0]} />
     </Canvas>
   )  
 }
 
 type MugProps = {
   textureImage?: HTMLImageElement,
+  textureControls?: TextureControls,
   insideColor?: string,
   handleColor?: string,
   /** 3D model to use for the mug */
-  model: { scene: any },
+  model: Object3D /*{ scene: any }*/,
 }
 
 function Mug(props: MugProps) {
   const { 
-    model: { scene }, 
+    model, 
     textureImage,
+    textureControls,
     insideColor, 
     handleColor,
   } = props;
 
-  const texture = useMugTexture({ textureImage, insideColor, handleColor });
+  const texture = useMugTexture({ textureImage, textureControls, insideColor, handleColor });
 
-  if (texture && scene) {
+  if (texture && model) {
     texture.flipY = true;
-    scene.children[0].material.map = texture;
+    const mesh = model.children[0] as Mesh
+    const material = mesh.material as MeshPhongMaterial;
+    material.map = texture;
+
+    material.toneMapped = false;
   }
 
-  return (
-    <primitive
-      object={scene}
-      position={[0, 1, 0]}
-      children-0-castShadow
-    />
-  );
+  return <primitive object={model}></primitive>
 }
 
 
