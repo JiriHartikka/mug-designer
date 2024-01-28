@@ -5,6 +5,7 @@ import styles from './page.module.css'
 import ImageInput from '@/components/file-input/image-input';
 import dynamic from 'next/dynamic';
 import { Suspense, useState } from 'react';
+import TextureControlsForm, { TextureControls } from '@/components/texture-controls/texture-controls';
 
 const MugScene = dynamic(() => import('@/three/mug-scene'), {
   ssr: false,
@@ -14,6 +15,7 @@ export default function Home() {
   const [image, setImage] = useState<HTMLImageElement>();
   const [insideColor, setInsideColor] = useState<ColorOption>();
   const [handleColor, setHandleColor] = useState<ColorOption>();
+  const [textureControls, setTextureControls] = useState<TextureControls>();
 
   const extractOptionValue = (option: ColorOption | undefined) => {
     const value = option?.value;
@@ -27,6 +29,7 @@ export default function Home() {
         <div className={styles.canvasContainer}>
           <MugScene 
             textureImage={image}
+            textureControls={textureControls}
             insideColor={extractOptionValue(insideColor)}
             handleColor={extractOptionValue(handleColor)}
           />
@@ -39,14 +42,19 @@ export default function Home() {
           </div>
 
           <div className={styles.inputGroup}>
-            <label htmlFor='select-inside-color'>Select color for the inside of the mug</label>
-            <ColorSelect id="select-inside-color" onSelected={setInsideColor}></ColorSelect>
+            <label htmlFor='select-color'>Select a color for the inside and the handle of the mug</label>
+            <ColorSelect id="select-color" onSelected={color => { setInsideColor(color); setHandleColor(color) }}></ColorSelect>
           </div>
 
-          <div className={styles.inputGroup}>
-            <label htmlFor='select-handle-color'>Select color for the handle of the mug</label>
-            <ColorSelect id="select-handle-color" onSelected={setHandleColor}></ColorSelect>
+          <div className={styles.textureControls}>
+            <label>Click to change the position of the texture on the mug</label>
+            <TextureControlsForm 
+              aspectRatio={3}
+              textureImage={image}
+              onControlsChanged={setTextureControls} 
+            />
           </div>
+
         </div>  
 
       </main>
