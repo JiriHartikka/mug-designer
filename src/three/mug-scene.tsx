@@ -5,7 +5,8 @@ import { OrbitControls } from '@react-three/drei';
 import { Canvas, useLoader } from '@react-three/fiber';
 import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader'
 import { TextureControls } from '@/components/texture-controls/texture-controls';
-import { Mesh, MeshPhongMaterial, Object3D } from 'three';
+import { Group, Mesh, MeshPhongMaterial, Object3D } from 'three';
+import { MutableRefObject, useEffect, useRef } from 'react';
 
 export type MugSceneProps = {
   textureImage?: HTMLImageElement,
@@ -81,18 +82,25 @@ function Mug(props: MugProps) {
     handleColor,
   } = props;
 
-  const texture = useMugTexture({ textureImage, textureControls, insideColor, handleColor });
+  const ref: MutableRefObject<Group | undefined> = useRef();
+  const material = (ref.current?.children[0] as Mesh | undefined)?.material as MeshPhongMaterial | undefined;
 
-  if (texture && model) {
-    texture.flipY = true;
-    const mesh = model.children[0] as Mesh
-    const material = mesh.material as MeshPhongMaterial;
-    material.map = texture;
+  const texture = useMugTexture({ 
+    textureImage,
+    textureControls,
+    insideColor,
+    handleColor,
+  });
 
-    material.toneMapped = false;
-  }
+  useEffect(() => {
+    if (material && texture) {
+      material.map = texture;
+      material.map.needsUpdate = true;
+      material.toneMapped = false;
+    }
+  }, [material, texture]);
 
-  return <primitive object={model}></primitive>
+  return <primitive ref={ref} object={model}></primitive>
 }
 
 

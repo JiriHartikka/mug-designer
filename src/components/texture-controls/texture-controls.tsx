@@ -45,7 +45,6 @@ export default function TextureControlsForm(props: TextureControlsProps) {
   };
 
   const handleClick = ({ clientX, clientY, target }: MouseEvent<HTMLCanvasElement, any>) => {
-    //const rect = canvasRef.current?.getBoundingClientRect();
     const rect = (target as HTMLCanvasElement).getBoundingClientRect();
     
     if (!rect) {
@@ -55,18 +54,17 @@ export default function TextureControlsForm(props: TextureControlsProps) {
     const { left, top, right, bottom } = rect; 
 
     const relX = (clientX - left) / (right - left) ;
-    const relY = (clientY - top) / (bottom - top);
+    const relY = 0; //(clientY - top) / (bottom - top);
 
-    setSelectedPosition([relX, relY]);
-    emitControlChangeEvent();
+    const selectedPosition: [number, number] = [relX, relY];
+    setSelectedPosition(selectedPosition);
+    emitControlChangeEvent(selectedPosition);
   };
 
-  const emitControlChangeEvent = () => {
+  const emitControlChangeEvent = (selectedPosition: [number, number]) => {
     if (onControlsChanged) {
-      console.log("emitting", selectedPosition);
-
       const event: TextureControls = {
-        selectedPosition,
+        selectedPosition: selectedPosition,
       }
       onControlsChanged(event);
     }
